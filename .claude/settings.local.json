@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm create *)",
+      "Bash(pnpm add *)",
+      "Bash(pnpm approve-builds *)",
+      "Bash(echo \"enable-pre-post-scripts=true\")",
+      "Bash(cat)",
+      "Bash(echo '{\"onlyBuiltDependencies\":[\"@prisma/engines\",\"prisma\"]}')",
+      "Bash(pnpm exec *)",
+      "Bash(npx prisma *)",
+      "Bash(rm -f .pnpmfile.cjs pnpm-workspace.yaml)",
+      "Bash(pnpm dlx *)",
+      "Bash(npx tsc *)",
+      "Bash(node *)",
+      "Bash(npx next *)",
+      "Bash(npx kill-port *)",
+      "Bash(pnpm tsc *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
+    ]
+  }
+}

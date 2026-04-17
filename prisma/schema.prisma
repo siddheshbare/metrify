@@ -1,0 +1,143 @@
+// NextAuth Prisma adapter tables + metrify domain models
+// Using prisma-client-js generator for @prisma/client compatibility with NextAuth adapter
+
+generator client {
+  provider = "prisma-client-js"
+  // Prisma v7 uses the new query compiler by default, which requires a driver adapter.
+  // We use @prisma/adapter-pg — see src/lib/prisma.ts.
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── NextAuth Tables ───────────────────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  creator       Creator?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?  @db.Text
+  access_token      String?  @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?  @db.Text
+  session_state     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+// ─── Metrify Domain Models ─────────────────────────────────────────────────────
+
+model Creator {
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  slug          String    @unique
+  previousSlug  String?
+  previousSlugExpiresAt DateTime?
+  displayName   String
+  bio           String?   @db.Text
+  niche         String?
+  profileImageUrl String?
+  isPublic      Boolean   @default(true)
+
+  youtubeChannelId   String?
+  youtubeConnectedAt DateTime?
+
+  instagramBusinessId     String?
+  instagramLongLivedToken String?  @db.Text // encrypted with AES-256-GCM
+  instagramTokenExpiresAt DateTime?
+  instagramConnectedAt    DateTime?
+
+  youtubeSnapshots   YouTubeSnapshot[]
+  instagramSnapshots InstagramSnapshot[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slug])
+}
+
+model YouTubeSnapshot {
+  id        String  @id @default(cuid())
+  creatorId String
+  creator   Creator @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+
+  // Channel-level metrics
+  subscribers   BigInt
+  totalViews    BigInt
+  videoCount    Int
+  avgViews      BigInt
+  avgEngagement Float  // (likes + comments) / views, last 30 days avg
+
+  // Complex shapes stored as JSON
+  topVideos    Json // { videoId, title, thumbnail, views, likes, comments, publishedAt }[]
+  demographics Json // { age: {...}, gender: {...}, geography: {...} }
+  growthTrend  Json // { date, subscribers, views }[] last 90 days
+
+  fetchedAt DateTime @default(now())
+
+  @@index([creatorId, fetchedAt])
+}
+
+model InstagramSnapshot {
+  id        String  @id @default(cuid())
+  creatorId String
+  creator   Creator @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+
+  followers      Int
+  following      Int
+  mediaCount     Int
+  avgLikes       Int
+  avgComments    Int
+  avgEngagement  Float
+  reach30d       BigInt
+  impressions30d BigInt
+
+  topPosts Json // { mediaId, caption, mediaType, mediaUrl, permalink, likes, comments, timestamp }[]
+  insights Json // reach, impressions, profile_views trend
+
+  fetchedAt DateTime @default(now())
+
+  @@index([creatorId, fetchedAt])
+}
