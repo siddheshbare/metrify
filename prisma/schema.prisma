@@ -80,6 +80,7 @@ model Creator {
   niche         String?
   profileImageUrl String?
   isPublic      Boolean   @default(true)
+  onboardedAt   DateTime?
 
   youtubeChannelId   String?
   youtubeConnectedAt DateTime?

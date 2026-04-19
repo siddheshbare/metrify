@@ -31,7 +31,7 @@ export const authConfig = {
       const isLoggedIn = !!auth?.user;
       const pathname = nextUrl.pathname;
 
-      const protectedPrefixes = ["/dashboard", "/connections", "/settings"];
+      const protectedPrefixes = ["/dashboard", "/connections", "/settings", "/onboarding"];
       const isProtected = protectedPrefixes.some((p) => pathname.startsWith(p));
 
       if (isProtected && !isLoggedIn) {

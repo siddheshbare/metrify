@@ -69,7 +69,12 @@ export async function GET(request: NextRequest) {
       console.error("[instagram/callback] snapshot trigger failed", { error: e, userId })
     );
 
-    return NextResponse.redirect(`${origin}/connections?connected=instagram`);
+    const creator = await db.creator.findUnique({
+      where: { userId },
+      select: { onboardedAt: true },
+    });
+    const redirectTo = creator?.onboardedAt ? "/connections?connected=instagram" : "/onboarding";
+    return NextResponse.redirect(`${origin}${redirectTo}`);
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     console.error("[instagram/callback] connection failed", { error: message });

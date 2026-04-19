@@ -22,11 +22,13 @@ export default async function DashboardPage() {
       id: true,
       displayName: true,
       slug: true,
+      onboardedAt: true,
       instagramBusinessId: true,
       instagramTokenExpiresAt: true,
     },
   });
   if (!creator) redirect("/sign-in");
+  if (!creator.onboardedAt) redirect("/onboarding");
 
   const [ytSnapshot, igSnapshot] = await Promise.all([
     db.youTubeSnapshot.findFirst({
