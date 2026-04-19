@@ -17,7 +17,10 @@
       "Bash(npx kill-port *)",
       "Bash(pnpm tsc *)",
       "Bash(git add *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(git commit *)",
+      "Bash(pnpm build *)",
+      "Bash(pnpm dev *)"
     ]
   }
 }

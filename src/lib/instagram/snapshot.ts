@@ -2,7 +2,7 @@ import { db } from "@/lib/prisma";
 import { decrypt } from "@/lib/crypto";
 import { fetchInstagramProfile } from "./fetch-profile";
 import { fetchTopMedia } from "./fetch-media";
-import { fetchInsights } from "./fetch-insights";
+import { fetchInsights, fetchAudienceDemographics } from "./fetch-insights";
 import { getLatestInstagramSnapshot, isSnapshotStale } from "@/lib/repo";
 import type { InstagramSnapshotData } from "@/types/instagram";
 import type { Prisma } from "@prisma/client";
@@ -37,10 +37,11 @@ export async function takeInstagramSnapshot(userId: string): Promise<SnapshotRes
   const accessToken = decrypt(creator.instagramLongLivedToken);
   const igUserId = creator.instagramBusinessId;
 
-  const [profile, topPosts, insightsResult] = await Promise.all([
+  const [profile, topPosts, insightsResult, audienceDemographics] = await Promise.all([
     fetchInstagramProfile(igUserId, accessToken),
     fetchTopMedia(igUserId, accessToken),
     fetchInsights(igUserId, accessToken),
+    fetchAudienceDemographics(igUserId, accessToken),
   ]);
 
   const avgLikes =
@@ -69,7 +70,10 @@ export async function takeInstagramSnapshot(userId: string): Promise<SnapshotRes
     reach30d: insightsResult.reach30d,
     impressions30d: insightsResult.impressions30d,
     topPosts,
-    insights: insightsResult.points,
+    insights: {
+      trend: insightsResult.points,
+      demographics: audienceDemographics ?? undefined,
+    },
   };
 
   const snapshot = await db.instagramSnapshot.create({

@@ -82,16 +82,16 @@ Each phase ends with a stop. One phase = one commit. Do not proceed to the next 
 
 ---
 
-## Phase 5: UI
+## Phase 5: UI ✓
 
-- [ ] Install shadcn components: button, card, tabs, avatar, badge, dialog, input, label, separator, skeleton, sonner
-- [ ] Install Recharts
-- [ ] Build `/dashboard` page + components
-- [ ] Build `/connections` page
-- [ ] Build `/settings` page
-- [ ] Build `/c/[slug]` public page
-- [ ] Build `/` landing page
-- [ ] Implement previous-slug 301 redirect in middleware
+- [x] Install shadcn components: button, card, tabs, avatar, badge, dialog, input, label, separator, skeleton, sonner, switch, textarea
+- [x] Install Recharts
+- [x] Build `/dashboard` page + components
+- [x] Build `/connections` page
+- [x] Build `/settings` page
+- [x] Build `/c/[slug]` public page
+- [x] Build `/` landing page
+- [x] Previous-slug 301 redirect handled in `/c/[slug]/page.tsx`
 
 **Stop. Manual test checklist:**
 1. Full happy path: sign in → dashboard → connect IG → share link → open link in incognito

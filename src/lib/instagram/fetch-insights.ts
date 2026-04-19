@@ -1,4 +1,4 @@
-import type { InsightPoint } from "@/types/instagram";
+import type { InsightPoint, IgAudienceDemographics } from "@/types/instagram";
 
 const GRAPH_API = "https://graph.facebook.com/v21.0";
 
@@ -81,4 +81,61 @@ export async function fetchInsights(
     totalsData.data.find((m) => m.name === "views")?.total_value.value ?? 0;
 
   return { points, reach30d, impressions30d };
+}
+
+// AI-UNVERIFIED: reached_audience_demographics breakdown response shape — dimension_values/results format guessed from Meta docs
+export async function fetchAudienceDemographics(
+  igUserId: string,
+  accessToken: string
+): Promise<IgAudienceDemographics | null> {
+  const makeUrl = (breakdown: string) => {
+    const url = new URL(`${GRAPH_API}/${igUserId}/insights`);
+    url.searchParams.set("metric", "reached_audience_demographics");
+    url.searchParams.set("period", "lifetime");
+    url.searchParams.set("metric_type", "total_value");
+    url.searchParams.set("breakdown", breakdown);
+    url.searchParams.set("access_token", accessToken);
+    return url.toString();
+  };
+
+  interface DemographicResult { dimension_values: string[]; value: number }
+  interface DemographicBreakdown { dimension_keys: string[]; results: DemographicResult[] }
+  interface DemographicMetric { name: string; total_value: { breakdowns: DemographicBreakdown[] } }
+  interface DemographicResponse { data: DemographicMetric[] }
+
+  try {
+    const [ageRes, genderRes, countryRes] = await Promise.all([
+      fetch(makeUrl("age"), { next: { revalidate: 0 } }),
+      fetch(makeUrl("gender"), { next: { revalidate: 0 } }),
+      fetch(makeUrl("country"), { next: { revalidate: 0 } }),
+    ]);
+
+    if (!ageRes.ok || !genderRes.ok || !countryRes.ok) {
+      const errs = await Promise.all([
+        !ageRes.ok ? ageRes.text() : "",
+        !genderRes.ok ? genderRes.text() : "",
+        !countryRes.ok ? countryRes.text() : "",
+      ]);
+      console.error("[instagram/fetch-insights] demographics failed", { errs });
+      return null;
+    }
+
+    const [ageData, genderData, countryData] = await Promise.all([
+      ageRes.json() as Promise<DemographicResponse>,
+      genderRes.json() as Promise<DemographicResponse>,
+      countryRes.json() as Promise<DemographicResponse>,
+    ]);
+
+    const extract = (d: DemographicResponse) =>
+      d.data?.[0]?.total_value?.breakdowns?.[0]?.results ?? [];
+
+    return {
+      age: extract(ageData).map((r) => ({ range: r.dimension_values[0] ?? "", value: r.value })),
+      gender: extract(genderData).map((r) => ({ label: r.dimension_values[0] ?? "", value: r.value })),
+      country: extract(countryData).map((r) => ({ code: r.dimension_values[0] ?? "", value: r.value })),
+    };
+  } catch (err) {
+    console.error("[instagram/fetch-insights] demographics exception", { err });
+    return null;
+  }
 }

@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,600;12..96,800&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -5,6 +6,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --font-display: "Bricolage Grotesque", sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
@@ -49,6 +51,9 @@
 }
 
 :root {
+  --emerald: oklch(0.72 0.22 145);
+  --emerald-dim: oklch(0.55 0.18 145);
+  --emerald-glow: oklch(0.72 0.22 145 / 0.12);
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -126,5 +131,13 @@
   }
   html {
     @apply font-sans;
+  }
+  .font-display {
+    font-family: var(--font-display);
+  }
+  .stat-number {
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: -0.03em;
   }
 }

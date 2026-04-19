@@ -28,6 +28,25 @@ export interface InsightPoint {
   profileViews: number;
 }
 
+export interface IgAudienceDemographics {
+  age: { range: string; value: number }[];
+  gender: { label: string; value: number }[];
+  country: { code: string; value: number }[];
+}
+
+// Stored in InstagramSnapshot.insights JSON column.
+// Old snapshots may have InsightPoint[] directly — normalise with parseIgInsights().
+export interface IgInsightsData {
+  trend: InsightPoint[];
+  demographics?: IgAudienceDemographics;
+}
+
+export function parseIgInsights(raw: unknown): IgInsightsData {
+  if (Array.isArray(raw)) return { trend: raw as InsightPoint[] };
+  if (raw && typeof raw === "object" && "trend" in raw) return raw as IgInsightsData;
+  return { trend: [] };
+}
+
 export interface InstagramSnapshotData {
   igUserId: string;
   followers: number;
@@ -39,5 +58,5 @@ export interface InstagramSnapshotData {
   reach30d: number;
   impressions30d: number;
   topPosts: InstagramPost[];
-  insights: InsightPoint[];
+  insights: IgInsightsData;
 }
