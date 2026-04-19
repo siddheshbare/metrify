@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "dev:clean": "npx kill-port 3000 && next dev --turbopack",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
